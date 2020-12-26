@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Felps Multiplayer Game</title>
+  <style>
+    #game-screen {
+      border: 5px solid grey;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      image-rendering: -moz-crisp-edges;
+      width: 600px;
+      height: 600px;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="game-screen" width="50" height="50"></canvas>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module">
+    const socket = io();
+    const canvas = document.querySelector('#game-screen');
+    const context = canvas.getContext('2d');
+
+    const gameState = {
+      players: {
+        player1: {
+          x: Math.trunc(Math.random() * canvas.width),
+          y: Math.trunc(Math.random() * canvas.height)
+        }
+      },
+
+      fruits: {
+        f1: {
+          x: Math.trunc(Math.random() * canvas.width),
+          y: Math.trunc(Math.random() * canvas.height)
+        }
+      }
+    };
+
+    requestAnimationFrame(renderGame);
+
+    function renderGame() {
+      context.fillStyle = 'white';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      const { players, fruits } = gameState;
+
+      for (const p in players) {
+        // spawn players
+        context.fillStyle = '#000000';
+        context.fillRect(players[p].x, players[p].y, 1, 1);
+      }
+
+      for (const f in fruits) {
+        // spawn player
+        context.fillStyle = '#11FF11';
+        context.fillRect(fruits[f].x, fruits[f].y, 1, 1);
+      }
+
+      requestAnimationFrame(renderGame);
+    }
+
+    //Move player
+    const movePlayer = (command) => {
+
+      const AllowedMovements = {
+        ArrowUp: playerId => {
+          gameState.players[playerId].y -= 1;
+        },
+
+        ArrowRight: playerId => {
+          gameState.players[playerId].x += 1;
+        },
+        ArrowDown: playerId => {
+          gameState.players[playerId].y += 1;
+        },
+        ArrowLeft: playerId => {
+          gameState.players[playerId].x -= 1;
+        },
+      };
+
+      const { key, playerId } = command;
+
+      AllowedMovements[key](playerId);
+    };
+    
+    const keydownHandler = (event) => {
+      const cmd = { key: event.key, playerId: 'player1'};
+
+      movePlayer(cmd);
+    };
+
+    document.addEventListener('keydown', keydownHandler);
+  </script>
+</body>
+
+</html>
