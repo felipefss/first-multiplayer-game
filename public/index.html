@@ -18,7 +18,7 @@
 </head>
 
 <body>
-  <canvas id="game-screen" width="50" height="50"></canvas>
+  <canvas id="game-screen"></canvas>
 
   <script src="/socket.io/socket.io.js"></script>
   <script type="module">
@@ -26,23 +26,7 @@
     const canvas = document.querySelector('#game-screen');
     const context = canvas.getContext('2d');
 
-    const gameState = {
-      players: {
-        player1: {
-          x: Math.trunc(Math.random() * canvas.width),
-          y: Math.trunc(Math.random() * canvas.height)
-        }
-      },
-
-      fruits: {
-        f1: {
-          x: Math.trunc(Math.random() * canvas.width),
-          y: Math.trunc(Math.random() * canvas.height)
-        }
-      }
-    };
-
-    requestAnimationFrame(renderGame);
+    let gameState = {};
 
     function renderGame() {
       context.fillStyle = 'white';
@@ -67,35 +51,28 @@
 
     //Move player
     const movePlayer = (command) => {
-
-      const AllowedMovements = {
-        ArrowUp: playerId => {
-          gameState.players[playerId].y -= 1;
-        },
-
-        ArrowRight: playerId => {
-          gameState.players[playerId].x += 1;
-        },
-        ArrowDown: playerId => {
-          gameState.players[playerId].y += 1;
-        },
-        ArrowLeft: playerId => {
-          gameState.players[playerId].x -= 1;
-        },
-      };
-
-      const { key, playerId } = command;
-
-      AllowedMovements[key](playerId);
+      socket.emit('movePlayer', command);
     };
     
     const keydownHandler = (event) => {
-      const cmd = { key: event.key, playerId: 'player1'};
+      const cmd = { keyPressed: event.key, playerId: 'player1'};
 
       movePlayer(cmd);
     };
 
     document.addEventListener('keydown', keydownHandler);
+
+    socket.on('setup', (state) => {
+      const { width, height } = state.screen;
+      canvas.height = width;
+      canvas.width = height;
+      gameState = Object.assign({}, state);
+      requestAnimationFrame(renderGame);
+    });
+
+    socket.on('updateState', (state) => {
+      gameState = Object.assign({}, state);
+    });
   </script>
 </body>
 
