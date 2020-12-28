@@ -36,42 +36,36 @@
 
       for (const p in players) {
         // spawn players
-        context.fillStyle = '#000000';
+        context.fillStyle = p == socket.id ? '#000000' : '#AAAAAA';
         context.fillRect(players[p].x, players[p].y, 1, 1);
       }
 
       for (const f in fruits) {
-        // spawn player
+        // spawn fruits
         context.fillStyle = '#11FF11';
         context.fillRect(fruits[f].x, fruits[f].y, 1, 1);
       }
 
       requestAnimationFrame(renderGame);
     }
-
-    //Move player
-    const movePlayer = (command) => {
-      socket.emit('movePlayer', command);
-    };
     
     const keydownHandler = (event) => {
-      const cmd = { keyPressed: event.key, playerId: 'player1'};
+      const cmd = { keyPressed: event.key, playerId: socket.id};
 
-      movePlayer(cmd);
+      socket.emit('movePlayer', cmd);
     };
 
     document.addEventListener('keydown', keydownHandler);
 
-    socket.on('setup', (state) => {
-      const { width, height } = state.screen;
+    socket.on('setup', (screen) => {
+      const { width, height } = screen;
       canvas.height = width;
       canvas.width = height;
-      gameState = Object.assign({}, state);
       requestAnimationFrame(renderGame);
     });
 
     socket.on('updateState', (state) => {
-      gameState = Object.assign({}, state);
+      gameState = Object.assign(gameState, state);
     });
   </script>
 </body>
